@@ -1,18 +1,19 @@
 package com.groom.marky.common;
 
 import com.groom.marky.domain.google.request.Coordinate;
+import com.groom.marky.domain.google.request.LocationRestriction;
 
-public class BoundingCircle {
+public class Circle implements LocationRestriction {
 
 	private Coordinate center;
 	private double radius;
 
-	public BoundingCircle(Coordinate center, int radiusMeters) {
+	public Circle(Coordinate center, int radiusMeters) {
 		this.center = center;
 		this.radius = radiusMeters;
 	}
 
-	public static BoundingCircle from(BoundingBox box) {
+	public static Circle from(Rectangle box) {
 
 		// 중간점 찾기
 		double centerLat = (box.getSouth() + box.getNorth()) / 2.0;
@@ -25,7 +26,7 @@ public class BoundingCircle {
 		int radius = (int)Math.ceil(
 			haversineDistanceMeters(center.getLatitude(), center.getLongitude(), cornerLat, cornerLng)
 		);
-		return new BoundingCircle(center, radius);
+		return new Circle(center, radius);
 	}
 
 	private static double haversineDistanceMeters(

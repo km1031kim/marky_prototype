@@ -4,27 +4,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.groom.marky.domain.google.request.Coordinate;
+import com.groom.marky.domain.google.request.LocationRestriction;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class BoundingBox {
+public class Rectangle implements LocationRestriction {
 
+	private Coordinate low;
+	private Coordinate high;
+
+/*
 	private final double west;   // 경도 최소 (xmin)
 	private final double south;  // 위도 최소 (ymin)
 	private final double east;   // 경도 최대 (xmax)
 	private final double north;  // 위도 최대 (ymax)
+*/
 
-	public BoundingBox(double west, double south, double east, double north) {
-		this.west = west;
-		this.south = south;
-		this.east = east;
-		this.north = north;
+	public Rectangle(double west, double south, double east, double north) {
+		low = new Coordinate(south, west);
+		high = new Coordinate(north, east);
 	}
 
-	public static BoundingBox boxOfSeoul() {
-		return new BoundingBox(
+	public static Rectangle rectOfSeoul() {
+		return new Rectangle(
 			SeoulBounds.MIN_LNG, SeoulBounds.MIN_LAT, SeoulBounds.MAX_LNG, SeoulBounds.MAX_LAT);
 	}
 
@@ -33,12 +39,12 @@ public class BoundingBox {
 	 * @param cols 가로 분할 개수 (경도 방향 칸 수)
 	 * @return 서브 BoundingBox 리스트 (크기 = rows*cols)
 	 */
-	public List<BoundingBox> generateGrid(int rows, int cols) {
+	public List<Rectangle> generateGrid(int rows, int cols) {
 		if (rows <= 0 || cols <= 0) {
 			throw new IllegalArgumentException("rows, cols must be > 0");
 		}
 
-		List<BoundingBox> grid = new ArrayList<>(rows * cols);
+		List<Rectangle> grid = new ArrayList<>(rows * cols);
 		double latStep = (north - south) / rows;
 		double lngStep = (east - west) / cols;
 
@@ -56,7 +62,7 @@ public class BoundingBox {
 				double cellWest = west + j * lngStep;
 				// 마지막 열이면 east 그대로, 아니면 step 만큼 더한 값
 				double cellEast = (j == cols - 1 ? east : cellWest + lngStep);
-				grid.add(new BoundingBox(cellWest, cellSouth, cellEast, cellNorth));
+				grid.add(new Rectangle(cellWest, cellSouth, cellEast, cellNorth));
 			}
 		}
 		return grid;
@@ -65,23 +71,23 @@ public class BoundingBox {
 	/**
 	 * 하나의 그리드를 4개의 그리드로 분할.
 	 */
-	public List<BoundingBox> splitGrid() {
+	public List<Rectangle> splitGrid() {
 		double midLat = (south + north) / 2;
 		double midLng = (west + east) / 2;
 
-		ArrayList<BoundingBox> splitGrids = new ArrayList<>();
+		ArrayList<Rectangle> splitGrids = new ArrayList<>();
 
 		// 남서
-		splitGrids.add(new BoundingBox(west, south, midLng, midLat));
+		splitGrids.add(new Rectangle(west, south, midLng, midLat));
 
 		// 남동
-		splitGrids.add(new BoundingBox(midLng, south, east, midLat));
+		splitGrids.add(new Rectangle(midLng, south, east, midLat));
 
 		// 북서
-		splitGrids.add(new BoundingBox(west, midLat, midLng, north));
+		splitGrids.add(new Rectangle(west, midLat, midLng, north));
 
 		// 북동
-		splitGrids.add(new BoundingBox(midLng, midLat, east, north));
+		splitGrids.add(new Rectangle(midLng, midLat, east, north));
 
 		return splitGrids;
 	}
@@ -95,7 +101,7 @@ public class BoundingBox {
 	public boolean equals(Object object) {
 		if (object == null || getClass() != object.getClass())
 			return false;
-		BoundingBox that = (BoundingBox)object;
+		Rectangle that = (Rectangle)object;
 		return Double.compare(west, that.west) == 0 && Double.compare(south, that.south) == 0
 			&& Double.compare(east, that.east) == 0 && Double.compare(north, that.north) == 0;
 	}

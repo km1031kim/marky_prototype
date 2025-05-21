@@ -1,4 +1,4 @@
-package com.groom.marky.domain;
+package com.groom.marky.domain.response;
 
 import java.util.List;
 
