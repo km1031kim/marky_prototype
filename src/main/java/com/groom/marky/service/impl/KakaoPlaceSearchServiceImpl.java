@@ -23,7 +23,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.groom.marky.common.BoundingBox;
+import com.groom.marky.domain.request.Rectangle;
 import com.groom.marky.domain.KakaoMapCategoryGroupCode;
 import com.groom.marky.service.KakaoPlaceSearchService;
 
@@ -113,15 +113,15 @@ public class KakaoPlaceSearchServiceImpl implements KakaoPlaceSearchService {
 	}
 
 	@Override
-	public Map<String, String> searchAll(List<BoundingBox> boxes, KakaoMapCategoryGroupCode code) {
+	public Map<String, String> searchAll(List<Rectangle> boxes, KakaoMapCategoryGroupCode code) {
 
 		HashMap<String, String> result = new HashMap<>();
-		ArrayDeque<BoundingBox> queue = new ArrayDeque<>(boxes);
+		ArrayDeque<Rectangle> queue = new ArrayDeque<>(boxes);
 
 		// 개별 박스 큐
 		while (!queue.isEmpty()) {
 
-			BoundingBox box = queue.poll();
+			Rectangle box = queue.poll();
 			String rect = box.toString();
 
 			int total = getTotalCount(rect, code);
@@ -167,17 +167,15 @@ public class KakaoPlaceSearchServiceImpl implements KakaoPlaceSearchService {
 	}
 
 	@Override
-	public Set<BoundingBox> getBoxes(List<BoundingBox> boxes, KakaoMapCategoryGroupCode code) {
+	public Set<Rectangle> getRects(List<Rectangle> rects, KakaoMapCategoryGroupCode code) {
 
-		Set<BoundingBox> result = new HashSet<>();
-		ArrayDeque<BoundingBox> queue = new ArrayDeque<>(boxes);
+		Set<Rectangle> result = new HashSet<>();
+		ArrayDeque<Rectangle> queue = new ArrayDeque<>(rects);
 
 		// 개별 박스 큐
 		while (!queue.isEmpty()) {
-			BoundingBox box = queue.poll();
-			String rect = box.toString();
-
-			int total = getTotalCount(rect, code);
+			Rectangle rect = queue.poll();
+			int total = getTotalCount(rect.toString(), code);
 
 			if (total == 0) {
 				continue;
@@ -185,10 +183,12 @@ public class KakaoPlaceSearchServiceImpl implements KakaoPlaceSearchService {
 
 			if (total > 60) {
 				// 분리
-				queue.addAll(box.splitGrid());
+				queue.addAll(rect.splitGrid());
 				continue;
 			}
-			result.add(box);
+
+			log.info("rect : {}, total : {}", rect, total);
+			result.add(rect);
 		}
 		return result;
 	}

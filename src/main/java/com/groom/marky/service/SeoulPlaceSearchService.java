@@ -9,7 +9,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.groom.marky.common.BoundingBox;
+import com.groom.marky.domain.request.Rectangle;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,8 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SeoulPlaceSearchService {
 
 	private final KakaoPlaceSearchService kakaoPlaceSearchService;
-	private static final BoundingBox seoulBox = BoundingBox.boxOfSeoul();
-	private static final List<BoundingBox> seoulBoxes = seoulBox.generateGrid(10, 10);
+	private static final Rectangle seoulBox = Rectangle.rectOfSeoul();
+	private static final List<Rectangle> seoulBoxes = seoulBox.generateGrid(10, 10);
 
 	@Autowired
 	public SeoulPlaceSearchService(KakaoPlaceSearchService kakaoPlaceSearchService) {
@@ -38,16 +38,16 @@ public class SeoulPlaceSearchService {
 		return kakaoPlaceSearchService.searchAll(seoulBoxes, FD6);
 	}
 
-	public Set<BoundingBox> getCafeBoxes() {
-		return kakaoPlaceSearchService.getBoxes(seoulBoxes, CE7);
+	public Set<Rectangle> getCafeRects() {
+		return kakaoPlaceSearchService.getRects(seoulBoxes, CE7);
 	}
 
-	public Set<BoundingBox> getRestaurantBoxes() {
-		return kakaoPlaceSearchService.getBoxes(seoulBoxes, FD6);
+	public Set<Rectangle> getRestaurantRects() {
+		return kakaoPlaceSearchService.getRects(seoulBoxes, FD6);
 	}
 
-	public Set<BoundingBox> getParkingLotBoxes() {
-		return kakaoPlaceSearchService.getBoxes(seoulBoxes, PK6);
+	public Set<Rectangle> getParkingLotRects() {
+		return kakaoPlaceSearchService.getRects(seoulBoxes, PK6);
 	}
 
 }

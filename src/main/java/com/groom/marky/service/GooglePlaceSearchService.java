@@ -1,13 +1,14 @@
 package com.groom.marky.service;
 
-import com.groom.marky.common.BoundingBox;
-import com.groom.marky.common.BoundingCircle;
-import com.groom.marky.domain.GooglePlacesResponse;
+import java.util.List;
+
+import com.groom.marky.domain.request.Rectangle;
+import com.groom.marky.domain.response.GooglePlacesApiResponse;
 
 public interface GooglePlaceSearchService {
 
-	GooglePlacesResponse search(String text, BoundingBox box);
+	List<String> search(String text, Rectangle box);
 
-	GooglePlacesResponse searchNearby(String text, BoundingBox box);
+	GooglePlacesApiResponse searchNearby(List<String> types, Rectangle box);
 
 }

@@ -11,6 +11,11 @@ spring:
         options:
           model: llama3.2-korean
           temperature: 0.1
+      embedding:
+        options:
+          model: nomic-embed-text
+          keep-alive: 5m
+          # truncate: true
 
   config:
     import: optional:file:.env[.properties]

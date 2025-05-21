@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.groom.marky.common.BoundingBox;
+import com.groom.marky.domain.request.Rectangle;
 import com.groom.marky.domain.KakaoMapCategoryGroupCode;
 
 public interface KakaoPlaceSearchService {
@@ -18,10 +18,10 @@ public interface KakaoPlaceSearchService {
 	Map<String, String> search(String rect, KakaoMapCategoryGroupCode code);
 
 	// 범위 내 특정 카테고리를 가진 모든 장소 반환
-	Map<String, String> searchAll(List<BoundingBox> boxes, KakaoMapCategoryGroupCode code);
+	Map<String, String> searchAll(List<Rectangle> boxes, KakaoMapCategoryGroupCode code);
 
 	// 키워드 검색
 	Map<String, String> search(String rect, String keyword);
 
-	Set<BoundingBox> getBoxes(List<BoundingBox> boxes, KakaoMapCategoryGroupCode categoryGroupCode);
+	Set<Rectangle> getRects(List<Rectangle> boxes, KakaoMapCategoryGroupCode categoryGroupCode);
 }

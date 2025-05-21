@@ -1,5 +1,7 @@
 package com.groom.marky.api;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.groom.marky.common.BoundingBox;
-import com.groom.marky.common.BoundingCircle;
-import com.groom.marky.domain.GooglePlacesResponse;
+import com.groom.marky.domain.request.Rectangle;
+import com.groom.marky.domain.response.GooglePlacesApiResponse;
+import com.groom.marky.service.EmbeddingService;
+import com.groom.marky.service.SeoulPlaceSearchService;
 import com.groom.marky.service.impl.GooglePlaceSearchServiceImpl;
 
 @Controller
@@ -19,28 +22,50 @@ import com.groom.marky.service.impl.GooglePlaceSearchServiceImpl;
 public class GoogleMapController {
 
 	private final GooglePlaceSearchServiceImpl googlePlaceSearchService;
+	private final SeoulPlaceSearchService seoulPlaceSearchService;
+	private final EmbeddingService embeddingService;
 
 	@Autowired
-	public GoogleMapController(GooglePlaceSearchServiceImpl googlePlaceSearchService) {
+	public GoogleMapController(GooglePlaceSearchServiceImpl googlePlaceSearchService,
+		SeoulPlaceSearchService seoulPlaceSearchService, EmbeddingService embeddingService) {
 		this.googlePlaceSearchService = googlePlaceSearchService;
+		this.seoulPlaceSearchService = seoulPlaceSearchService;
+		this.embeddingService = embeddingService;
+	}
+
+	@GetMapping("/google/search/text")
+	public ResponseEntity<?> searchText() {
+
+		// kakao cafe 57
+		Rectangle box = new Rectangle(
+			127.0016985,
+			37.684949100000004,
+			127.055221,
+			37.715133); // 50
+
+		//Set<Rectangle> cafeRects = seoulPlaceSearchService.getCafeRects();
+		//List<String> result = new ArrayList<>();
+
+		List<String> response = googlePlaceSearchService.search("카페", box);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 
-	@GetMapping("/google")
-	public ResponseEntity<?> callKeywordSearchApi() {
+	@GetMapping("/google/search/nearby")
+	public ResponseEntity<?> searchNearby() {
 
 		// 126.91844127777779,37.550798433333334,126.92141475000001,37.552475316666666, total : 42
 
-		BoundingBox box = new BoundingBox(
-			126.91844127777779,
-			37.550798433333334,
-			126.92141475000001,
-			37.552475316666666);
+		// kakao cafe 50
+		Rectangle box = new Rectangle(
+			127.0016985,
+			37.684949100000004,
+			127.055221,
+			37.715133); // 50
 
-		// 5건 나오네..
+		GooglePlacesApiResponse response = googlePlaceSearchService.searchNearby(List.of("restaurant"), box);
 
-
-		GooglePlacesResponse response = googlePlaceSearchService.searchNearby("식당", box);
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

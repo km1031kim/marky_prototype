@@ -5,6 +5,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,11 +16,6 @@ import com.groom.marky.advisor.SubwayRouteAdvisor;
 import com.groom.marky.advisor.SystemRoleAdvisor;
 import com.groom.marky.common.TmapGeocodingClient;
 import com.groom.marky.common.TmapTransitClient;
-import com.groom.marky.service.KakaoPlaceSearchService;
-import com.groom.marky.service.PlaceSearchService;
-import com.groom.marky.service.SeoulPlaceSearchService;
-import com.groom.marky.service.impl.KakaoPlaceSearchServiceImpl;
-
 @Configuration
 public class ChatClientConfig {
 
@@ -43,7 +39,9 @@ public class ChatClientConfig {
 
 	@Bean
 	public RestTemplate restTemplate() {
-		return new RestTemplate();
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+		return restTemplate;
 	}
 
 	@Bean
