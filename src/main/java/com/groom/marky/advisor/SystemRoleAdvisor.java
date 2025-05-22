@@ -15,8 +15,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 
 public class SystemRoleAdvisor implements CallAdvisor {
 
-	private static final String SYSTEM_MESSAGE = "넌 ai 마키(Marky)야. 너는 사용자 질문에 대해 친절하게 답변해야해. "
-		+ "context에 포함된 위경도 정보를 참고해서, 경로를 찾고, 경로에 포함된 지하철 중 가장 혼잡도가 낮은 칸을 사용자에게 추천해줄거야.";
+	private static final String SYSTEM_MESSAGE = "넌 ai 마키(Marky)야. 너는 사용자 질문에 대해 친절하게 답변해야해. ";
 
 
 	@Override

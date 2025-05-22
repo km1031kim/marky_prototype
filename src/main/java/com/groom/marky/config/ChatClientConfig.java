@@ -1,8 +1,10 @@
 package com.groom.marky.config;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -10,10 +12,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.groom.marky.advisor.DestinationExtractionAdvisor;
 import com.groom.marky.advisor.LocationResolverAdvisor;
 import com.groom.marky.advisor.SubwayRouteAdvisor;
 import com.groom.marky.advisor.SystemRoleAdvisor;
+import com.groom.marky.advisor.UserIntentAdvisor;
 import com.groom.marky.common.TmapGeocodingClient;
 import com.groom.marky.common.TmapTransitClient;
 @Configuration
@@ -23,16 +25,16 @@ public class ChatClientConfig {
 	public ChatClient ollamaChatClient(
 		OllamaChatModel model,
 		SystemRoleAdvisor systemRoleAdvisor,
-		DestinationExtractionAdvisor destinationExtractionAdvisor,
-		LocationResolverAdvisor locationResolverAdvisor,
-		SubwayRouteAdvisor subwayRouteAdvisor
+		UserIntentAdvisor userIntentAdvisor,
+		LocationResolverAdvisor locationResolverAdvisor
+		//SubwayRouteAdvisor subwayRouteAdvisor
 	) {
 		return ChatClient.builder(model)
 			.defaultAdvisors(
 				systemRoleAdvisor,
-				destinationExtractionAdvisor,
-				locationResolverAdvisor,
-				subwayRouteAdvisor
+				userIntentAdvisor,
+				locationResolverAdvisor
+				//subwayRouteAdvisor
 			)
 			.build();
 	}
@@ -52,11 +54,11 @@ public class ChatClientConfig {
 	}
 
 	@Bean
-	public DestinationExtractionAdvisor destinationExtractionAdvisor(
+	public UserIntentAdvisor userIntentAdvisor(
 		ChatModel chatModel,
 		ObjectMapper objectMapper
 	) {
-		return new DestinationExtractionAdvisor(chatModel, objectMapper);
+		return new UserIntentAdvisor(chatModel, objectMapper);
 	}
 
 	@Bean
@@ -73,6 +75,9 @@ public class ChatClientConfig {
 	public LocationResolverAdvisor locationResolverAdvisor(TmapGeocodingClient tmapGeocodingClient) {
 		return new LocationResolverAdvisor(tmapGeocodingClient);
 	}
+
+
+
 
 	@Bean
 	public TmapTransitClient tmapTransitClient(ObjectMapper objectMapper, RestTemplate restTemplate) {

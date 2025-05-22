@@ -1,6 +1,5 @@
 package com.groom.marky.api;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -11,12 +10,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.groom.marky.domain.GooglePlaceType;
 import com.groom.marky.domain.request.Rectangle;
 import com.groom.marky.domain.response.GooglePlacesApiResponse;
 import com.groom.marky.service.EmbeddingService;
 import com.groom.marky.service.SeoulPlaceSearchService;
 import com.groom.marky.service.impl.GooglePlaceSearchServiceImpl;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Controller
 @RequestMapping("/api")
 public class GoogleMapController {
@@ -37,20 +40,25 @@ public class GoogleMapController {
 	public ResponseEntity<?> searchText() {
 
 		// kakao cafe 57
-		Rectangle box = new Rectangle(
+	/*	Rectangle box = new Rectangle(
 			127.0016985,
 			37.684949100000004,
 			127.055221,
-			37.715133); // 50
+			37.715133);*/
 
-		//Set<Rectangle> cafeRects = seoulPlaceSearchService.getCafeRects();
-		//List<String> result = new ArrayList<>();
+		 Set<Rectangle> parkingLotRects = seoulPlaceSearchService.getParkingLotRects();
 
-		List<String> response = googlePlaceSearchService.search("카페", box);
+		log.info("박스 수 : {} " , parkingLotRects.size());
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		for (Rectangle rect : parkingLotRects) {
+			GooglePlacesApiResponse response = googlePlaceSearchService.search("주차장", GooglePlaceType.PARKING, rect);
+			log.info("rect : {}, 장소 수 : {} ", rect, response.places().size());
+			embeddingService.saveEmbeddings(response);
+			log.info("임베딩 완료");
+		}
+
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
-
 
 	@GetMapping("/google/search/nearby")
 	public ResponseEntity<?> searchNearby() {
@@ -64,6 +72,7 @@ public class GoogleMapController {
 			127.055221,
 			37.715133); // 50
 
+		// 응답
 		GooglePlacesApiResponse response = googlePlaceSearchService.searchNearby(List.of("restaurant"), box);
 
 		return new ResponseEntity<>(response, HttpStatus.OK);

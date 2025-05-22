@@ -2,6 +2,14 @@ spring:
   application:
     name: marky
 
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+
   ai:
     model:
       chat: ollama
@@ -15,12 +23,13 @@ spring:
         options:
           model: nomic-embed-text
           keep-alive: 5m
-          # truncate: true
 
-  config:
-    import: optional:file:.env[.properties]
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 768
+        max-document-batch-size: 10000 # Optional: Maximum number of documents per batch
+        table-name: vector_store
+        initialize-schema: false
 
-  datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:

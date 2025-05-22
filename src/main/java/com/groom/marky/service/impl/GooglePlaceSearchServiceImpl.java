@@ -4,7 +4,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,15 +16,18 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.groom.marky.domain.GooglePlaceType;
 import com.groom.marky.domain.request.Circle;
 import com.groom.marky.domain.request.LocationRestriction;
 import com.groom.marky.domain.request.PlacesNearbyRequest;
 import com.groom.marky.domain.request.PlacesTextRequest;
 import com.groom.marky.domain.request.Rectangle;
 import com.groom.marky.domain.response.GooglePlacesApiResponse;
-import com.groom.marky.domain.response.PlaceDescriptionBuilder;
 import com.groom.marky.service.GooglePlaceSearchService;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class GooglePlaceSearchServiceImpl implements GooglePlaceSearchService {
 
@@ -76,7 +78,6 @@ public class GooglePlaceSearchServiceImpl implements GooglePlaceSearchService {
 		"places.takeout"
 	);
 
-
 	private String apiKey;
 
 	private final RestTemplate restTemplate;
@@ -92,13 +93,13 @@ public class GooglePlaceSearchServiceImpl implements GooglePlaceSearchService {
 	}
 
 	@Override
-	public List<String> search(String text, Rectangle rect) {
+	public GooglePlacesApiResponse search(String text, GooglePlaceType type, Rectangle rect) {
+		log.info("호출");
 
 		ArrayList<GooglePlacesApiResponse.Place> places = new ArrayList<>();
 
 		String nextPageToken = null;
-
-		PlacesTextRequest request = buildRequest(text, rect, nextPageToken);
+		PlacesTextRequest request = buildRequest(text, type, rect, nextPageToken);
 
 		// 헤더 세팅
 		HttpHeaders headers = new HttpHeaders();
@@ -109,7 +110,8 @@ public class GooglePlaceSearchServiceImpl implements GooglePlaceSearchService {
 		// 요청 생성
 		HttpEntity<PlacesTextRequest> httpEntity = new HttpEntity<>(request, headers);
 
-		GooglePlacesApiResponse response = restTemplate.exchange(getGoogleSearchTextUri(), HttpMethod.POST, httpEntity,
+		GooglePlacesApiResponse response = restTemplate.exchange(getGoogleSearchTextUri(), HttpMethod.POST,
+			httpEntity,
 			GooglePlacesApiResponse.class).getBody();
 
 		// 응답 담기
@@ -118,10 +120,13 @@ public class GooglePlaceSearchServiceImpl implements GooglePlaceSearchService {
 			nextPageToken = response.nextPageToken();
 		}
 
+		// 60개까지 반복
 		while (nextPageToken != null) {
-			request = buildRequest(text, rect, nextPageToken);
+			request = buildRequest(text, type, rect, nextPageToken);
 			httpEntity = new HttpEntity<>(request, headers);
-			response = restTemplate.exchange(getGoogleSearchTextUri(), HttpMethod.POST, httpEntity,
+
+			response = restTemplate.exchange(getGoogleSearchTextUri(), HttpMethod.POST,
+				httpEntity,
 				GooglePlacesApiResponse.class).getBody();
 
 			// 응답 담기
@@ -131,14 +136,14 @@ public class GooglePlaceSearchServiceImpl implements GooglePlaceSearchService {
 			}
 		}
 
-		return places.stream()
-			.map(PlaceDescriptionBuilder::buildDescription)
-			.collect(Collectors.toCollection(ArrayList::new));
+		// 여기서 응답을 만들어야 함.
+		return new GooglePlacesApiResponse(places, null);
 	}
 
-	private static PlacesTextRequest buildRequest(String text, LocationRestriction restriction, String pageToken) {
+	private static PlacesTextRequest buildRequest(String text, GooglePlaceType type, LocationRestriction restriction, String pageToken) {
 		return PlacesTextRequest.builder()
 			.pageToken(pageToken)
+			.includedType(type.getGoogleType())
 			.textQuery(text)
 			.languageCode(LANGUAGE_CODE)
 			.regionCode(REGION_CODE)

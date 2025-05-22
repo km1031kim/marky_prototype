@@ -20,6 +20,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PlacesTextRequest {
 	private String pageToken;
+	private String includedType;
 	private String textQuery;
 	private String languageCode;
 	private String regionCode;
